@@ -16,30 +16,46 @@ class AudioSender(
     val serverIp: String,
     val serverPort: Int,
 ){
-    val socket = DatagramSocket()
+    private val socket = DatagramSocket()
+
+    //sounds variables
+    val audioSource = MediaRecorder.AudioSource.MIC//define o dispositivo de audio, vou usar o padrao mesmo, o principal
+    val sampleRate = 44100//aqui to definindo em Hz, Hz de cd aqui, aqui é frenquencia, é tipo quantos frames por segundo vai ter o audio
+    val channelConfig = AudioFormat.CHANNEL_IN_MONO //vou gravar em mono, nada de Sterio
+    val audioFormat = AudioFormat.ENCODING_PCM_16BIT //aqui define a quantidade de bit de cada amostra, no caso 16bit
+    val bufferSize = AudioRecord.getMinBufferSize(
+        sampleRate,
+        channelConfig,
+        audioFormat
+    )
 
     // vou simular o envio de numeros inteiros so pra fingi que é audio, tenho que estudar melhor a classe AudioRecord
     suspend fun start(){
-        var sound = 0
+        val audioRecord = AudioRecord(
+            audioSource,
+            sampleRate,
+            channelConfig,
+            audioFormat,
+            bufferSize
+        )
+        val udpBuffer = ByteArray(1400) // pra nao haver perca de dados
+        audioRecord.startRecording() //aqui ele começa a gravar, por enquanto eu nao estou lendo, mas ele esta gravando
+
         while (true){
-            val buffer = ByteBuffer.allocate(Int.SIZE_BYTES)
-            buffer.order(ByteOrder.BIG_ENDIAN)
-            buffer.putInt(sound)
+            val bytesRead = audioRecord.read( // essa função vai escrever no buffer e retornarar o numero de bytes lidos
+                udpBuffer, // local onde eu quero gravar, aqui é um array de bytes
+                0, //onde eu quero começar gravando, eu quero começar no incio do array por isso 0
+                udpBuffer.size // tamanho do meu array de bytes
+            )
 
-            val data = buffer.array()
+            if(bytesRead > 0){
+                val dataPacket = DatagramPacket(udpBuffer, bytesRead, InetAddress.getByName(serverIp), serverPort)
 
-            val dataPacket = DatagramPacket(data, data.size, InetAddress.getByName(serverIp), serverPort)
-
-            withContext(Dispatchers.IO){
-                socket.send(dataPacket)
+                withContext(Dispatchers.IO){
+                    socket.send(dataPacket)
+                }
             }
-
-            sound++
         }
     }
-
-
-
-
 }
 
