@@ -1,4 +1,4 @@
-package com.example.nextmic
+package com.example.nextmic.util
 
 import android.media.AudioFormat
 import android.media.AudioRecord
@@ -8,9 +8,6 @@ import kotlinx.coroutines.withContext
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-
 
 class AudioSender(
     val serverIp: String,
@@ -49,13 +46,17 @@ class AudioSender(
             )
 
             if(bytesRead > 0){
-                val dataPacket = DatagramPacket(udpBuffer, bytesRead, InetAddress.getByName(serverIp), serverPort)
+                val dataPacket = DatagramPacket(
+                    udpBuffer,
+                    bytesRead,
+                    InetAddress.getByName(serverIp),
+                    serverPort
+                )
 
-                withContext(Dispatchers.IO){
+                withContext(Dispatchers.IO) {
                     socket.send(dataPacket)
                 }
             }
         }
     }
 }
-

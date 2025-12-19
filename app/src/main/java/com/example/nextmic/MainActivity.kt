@@ -15,8 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.lifecycleScope
+
 import com.example.nextmic.sandbox.Client
+import com.example.nextmic.ui.elements.Home
 import com.example.nextmic.ui.theme.NextMicTheme
 import kotlinx.coroutines.launch
 
@@ -26,26 +27,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NextMicTheme {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                    ,
-                    contentAlignment = Alignment.Center
-                ){
-                    TextButton(
-                        onClick = {
-                            lifecycleScope.launch {
-                                val audioSender = AudioSender(
-                                    serverIp = "192.168.15.11",
-                                    serverPort = 30000
-                                )
-                                audioSender.start()
-                            }
-                        }
-                    ) {
-                        Text("Start")
-                    }
-                }
+                Home()
             }
         }
     }
